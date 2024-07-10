@@ -1,0 +1,6 @@
+flask
+pandas
+plotly
+langchain
+wheel
+matplotlib
