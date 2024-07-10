@@ -1,0 +1,348 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Accredian Dashboard</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Overall page styling */
+        body {
+            font-family: 'Roboto', sans-serif;
+            background-color: #f5f5f5;
+            /* Light gray background */
+            color: #333;
+            /* Dark text */
+        }
+
+        /* Main grid layout */
+        .grid {
+            display: grid;
+            grid-template-columns: 240px 1fr;
+            gap: 20px;
+            padding: 20px;
+        }
+
+        /* Sidebar styling */
+        .sidebar {
+            position: relative;
+            background-color: #00447c;
+            /* Dark blue sidebar */
+            color: #fff;
+            /* White text */
+            padding: 1.5rem;
+            border-radius: 20px;
+            height: 900px;
+        }
+
+        .sidebar li {
+            cursor: pointer;
+            padding: 1rem;
+            transition: background-color 0.3s;
+            display: flex;
+            align-items: center;
+        }
+
+        .sidebar li:hover {
+            background-color: #005c9c;
+            border-radius:10px;
+            /* Darker shade of blue on hover */
+        }
+
+        .sidebar li i {
+            margin-right: 0.5rem;
+        }
+
+        /* Content box styling */
+        .content-box {
+            animation: fadeIn 1s ease-in-out;
+            background-color: #ffffff;
+            /* White content boxes */
+            border-radius: 20px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            padding: 20px;
+            color: #333;
+            margin-bottom: 20px;
+        }
+
+        .content-box h2,
+        .content-box h3 {
+            color: #00447c;
+            /* Dark blue headings */
+            margin-bottom: 1rem;
+        }
+
+        .content-box select {
+            background: #e6e6e6;
+            /* Light gray background for select */
+            border: 1px solid #cccccc;
+            /* Light gray border */
+            padding: 8px;
+            border-radius: 5px;
+            width: 100%;
+            color: #333;
+            transition: border-color 0.3s;
+        }
+
+        .content-box select:focus {
+            border-color: #0074bd;
+            /* Dark blue focus border */
+        }
+
+        /* Chat container styling */
+        .chat-container {
+            display: flex;
+            flex-direction: column;
+            height: 500px;
+            border-radius: 30px;
+            padding: 16px;
+            background: #ffffff;
+            /* White chat background */
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            margin-bottom: 20px;
+        }
+
+        .chat-header {
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-bottom: 16px;
+            color: #00447c;
+            /* Dark blue heading */
+        }
+
+        .chat-messages {
+            flex: 1;
+            overflow-y: auto;
+            padding: 8px;
+            margin-bottom: 16px;
+            border-radius: 4px;
+            background-color: #ffffff;
+            /* White chat messages background */
+            color: #333;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .chat-messages .message {
+            max-width: 80%;
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 8px;
+        }
+
+        .chat-messages .message.bot-message {
+            align-self: flex-start;
+            background-color: #0074bd;
+            /* Dark blue for bot message */
+            color: white;
+        }
+
+        .chat-messages .message.user-message {
+            align-self: flex-end;
+            background-color: #ffffff;
+            /* White for user message */
+            color: #00447c;
+            /* Dark blue text */
+        }
+
+        .chat-messages .message p {
+            margin: 0;
+        }
+
+        .chat-input {
+            display: flex;
+            gap: 8px;
+        }
+
+        .chat-input input {
+            flex: 1;
+            padding: 8px;
+            border: 1px solid #cccccc;
+            /* Light gray input border */
+            border-radius: 4px;
+            color: #333;
+            background-color: #ffffff;
+            /* White input background */
+            transition: border-color 0.3s;
+        }
+
+        .chat-input input:focus {
+            border-color: #0074bd;
+            /* Dark blue focus border */
+        }
+
+        .chat-input button {
+            padding: 8px 16px;
+            background-color: #0074bd;
+            /* Dark blue button */
+            color: white;
+            border: none;
+            border-radius: 4px;
+            transition: background-color 0.3s;
+        }
+
+        .chat-input button:hover {
+            background-color: #005c9c;
+            /* Darker shade of blue on hover */
+        }
+
+        /* Fixed buttons */
+        .fixed-button {
+            /* position: fixed; */
+            bottom: 4rem;
+            right: 4rem;
+            background-color: #f6ad55;
+            /* Orange button */
+            color: white;
+            padding: 0.75rem 1.5rem;
+            border-radius: 9999px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        .fixed-button:hover {
+            background-color: #dd6b20;
+            /* Darker shade of orange on hover */
+        }
+
+        /* Analytics section styling */
+        .analytics-section {
+            background: #ffffff;
+            /* White analytics background */
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            padding: 20px;
+            margin-top: 20px;
+        }
+
+        .analytics-section h3 {
+            color: #00447c;
+            /* Dark blue heading */
+        }
+
+        /* Footer styling */
+        footer {
+            background-color: #00447c;
+            /* Dark footer background */
+            color: white;
+            text-align: center;
+            padding: 1rem;
+            position: fixed;
+            bottom: 0;
+            width: 100%;
+        }
+    </style>
+</head>
+
+<body class="font-sans">
+    <main class="grid">
+        <aside class="sidebar">
+            <ul class="space-y-2">
+                <li class="p-2 flex items-center">
+                    <i class="fas fa-robot mr-2"></i> Interview Bot
+                </li>
+                <li class="p-2 cursor-pointer flex items-center">
+                    <i class="fas fa-headset mr-2"></i> 24/7 AI Assistance
+                </li>
+                <li class="p-2 cursor-pointer flex items-center">
+                    <i class="fas fa-file-alt mr-2"></i> Resume Building
+                </li>
+                <li class="p-2 cursor-pointer flex items-center">
+                    <i class="fas fa-users mr-2"></i> HR Discussion
+                </li>
+                <li class="p-2 cursor-pointer flex items-center">
+                    <i class="fas fa-book mr-2"></i> E-books
+                </li>
+                <li class="p-2 cursor-pointer flex items-center">
+                    <i class="fas fa-microphone-alt mr-2"></i> Vocal InterviewBot
+                </li>
+                <li class="p-2 cursor-pointer flex items-center">
+                    <i class="fas fa-chalkboard-teacher mr-2"></i> Master Classes
+                </li>
+                <li class="p-2 cursor-pointer flex items-center">
+                    <i class="fas fa-certificate mr-2"></i> Certificates
+                </li>
+                <li class="p-2 cursor-pointer flex items-center">
+                    <i class="fas fa-trophy mr-2"></i> Success Story
+                </li>
+            </ul>
+        </aside>
+        <section class="p-6">
+            <div class="grid grid-cols-3 gap-6 mb-6">
+                <div class="content-box fade-in">
+                    <h2 class="text-xl font-semibold">Choose Your Company</h2>
+
+                    <!-- <select  id="job_positions" name="company" class="mt-4" required>
+                        <option value="">Select a company</option>
+                        <option value="Wipro">Wipro</option>
+                        <option value="Infosys">Infosys</option>
+                        <option value="TCS">TCS</option>
+                        <option value="HCL Technologies">HCL Technologies</option>
+                    </select> -->
+                    <form action="/index6_b" method="post">
+                        <!-- <input type="text" name="company" placeholder="Company Name" required> -->
+                        <select id="job_positions" name="company" required>
+                            <option value="">Select a position</option>
+                            <option value="Wipro">Wipro</option>
+                            <option value="Infosys">Infosys</option>
+                            <option value="TCS">TCS</option>
+                            <option value="HCL Technologies">HCL Technologies</option>
+                            
+                          </select>
+                        <button type="submit">Next</button>
+                    </form>
+                </div>
+                <div class="content-box fade-in">
+                    <h2 class="text-xl font-semibold">Choose Your Skill</h2>
+                    <select id="job_positions" name="domain" class="mt-4" required>
+                        <option value="">Select a skill</option>
+                        <option value="NLP">NLP</option>
+                        <option value="Machine Learning">Machine Learning</option>
+                        <option value="Python">Python</option>
+                    </select>
+                </div>
+            </div>
+            <div class="chat-container fade-in">
+                <div class="chat-header">
+                    <h2 class="text-xl font-semibold">Interview Prep Chatbot</h2>
+                    <p>Preparing for <span id="selectedCompany"></span> in the domain of <span id="selectedDomain"></span></p>
+                </div>
+                <div class="chat-messages">
+                    <!-- Chat messages will be dynamically added here -->
+                    <div class="message bot-message">
+                        <p>Choose your dream company</p>
+                    </div>
+                </div>
+                <div class="chat-input">
+                    <input type="text" placeholder="Type your message...">
+                    <button>Send</button>
+                </div>
+            </div>
+            <button class="fixed-button">View Analytics</button>
+            <div class="analytics-section fade-in">
+                <h3 class="text-lg font-semibold">Dashboard Analytics</h3>
+                <!-- Analytics content will be added here -->
+                <p>Here you can find detailed analytics about your performance and progress.</p>
+                <p>Track your learning journey and get insights to improve your skills.</p>
+            </div>
+        </section>
+    </main>
+</body>
+
+</html>
