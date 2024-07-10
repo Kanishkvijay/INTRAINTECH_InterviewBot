@@ -1,0 +1,255 @@
+body {
+    margin: 0;
+    font-family: 'Roboto', sans-serif;
+    background-color: #f5f6fa;
+    display: flex;
+}
+
+.sidebar {
+    width: 240px;
+    background-color: #E4E7FD;
+    box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1);
+    display: flex;
+    flex-direction: column;
+    padding: 20px;
+}
+
+.sidebar h1 {
+    color: #1A2BC6;
+    font-size: 24px;
+    margin-bottom: 30px;
+}
+
+.sidebar a {
+    color: #36454F;
+    text-decoration: none;
+    font-weight: 500;
+    margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+    font-size: 18px;
+    height: auto;
+}
+
+.sidebar a:hover {
+    color: #007dff;
+}
+
+.sidebar a svg {
+    margin-right: 10px;
+}
+
+.premium {
+    background: #fff;
+    border-radius: 10px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    padding: 20px;
+    width: 210px;
+    text-align: center;
+    position: relative;
+}
+
+.premium button {
+    background-color: #1A2BC6;
+    color: #fff;
+    height: 35px;
+    width: 85px;
+    border-radius: 10px;
+}
+
+.premium h2 {
+    color: #1A2BC6;
+}
+
+.main-content {
+    flex: 1;
+    padding: 20px;
+}
+
+.main-content .header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 30px;
+}
+
+.main-content .header h1 {
+    color: #111827;
+    font-size: 28px;
+}
+
+.main-content .header .search {
+    position: relative;
+}
+
+.main-content .header .search input {
+    padding: 10px 20px;
+    border-radius: 25px;
+    border: 1px solid #ddd;
+    width: 200px;
+}
+
+.main-content .header .search input:focus {
+    outline: none;
+    border-color: #3b82f6;
+}
+
+.premium-banner {
+    background-color: #E4E7FD;
+    height: 150px;
+    padding: 20px;
+    border-radius: 20px;
+}
+
+.premium-banner button {
+    background-color: #1A2BC6;
+    color: #fff;
+    height: 35px;
+    width: 85px;
+    border-radius: 10px;
+}
+
+.premium-banner h2 {
+    color: #1A2BC6;
+}
+
+.continue-reading {
+    background-color: #fff;
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+.continue-reading h2 {
+    font-size: 24px;
+    margin-bottom: 20px;
+    color: #111827;
+}
+
+.continue-reading .course-list {
+    display: flex;
+    justify-content: space-between;
+    flex-wrap: wrap;
+}
+
+.continue-reading .course {
+    background-color: #f1f5f9;
+    border-radius: 10px;
+    padding: 15px;
+    width: 48%;
+    margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+}
+
+.continue-reading .course img {
+    border-radius: 50%;
+    margin-right: 15px;
+}
+
+.continue-reading .course h3 {
+    font-size: 18px;
+    margin: 0;
+    color: #111827;
+}
+
+.continue-reading .course p {
+    font-size: 14px;
+    color: #6b7280;
+    margin: 5px 0 0;
+}
+
+.continue-reading .view-all {
+    text-align: right;
+    margin-top: 20px;
+}
+
+.continue-reading .view-all a {
+    color: #3b82f6;
+    text-decoration: none;
+    font-weight: 500;
+}
+
+.continue-reading .view-all a:hover {
+    color: #1d4ed8;
+}
+
+.dashboard {
+    margin: 10px;
+    margin-bottom: 30px;
+}
+
+.dashboard h1 {
+    text-align: left;
+}
+
+.cards {
+    display: flex;
+    justify-content: center;
+    gap: 20px;
+    flex-wrap: wrap;
+}
+
+.card {
+    background: #E4E7FD;
+    border-radius: 10px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    padding: 20px;
+    width: 300px;
+    text-align: left;
+    position: relative;
+    display: flex;
+}
+
+.details p {
+    margin: 5px 0;
+    color: #36454F;
+    font-size: 17px;
+    font-weight: 500;
+}
+
+.details h2 {
+    margin: 5px 0;
+    color: #1A2BC6;
+    font-size: 50px;
+}
+
+.progress {
+    margin-top: 10px;
+    position: relative;
+    width: 100px;
+    height: 100px;
+}
+
+.progress svg {
+    position: relative;
+    width: 100px;
+    height: 100px;
+}
+
+.progress svg circle {
+    width: 100%;
+    height: 100%;
+    fill: none;
+    stroke-width: 8;
+    stroke: #f0f0f0;
+    transform: translate(5px, 5px);
+    stroke-dasharray: 282.6;
+    /* 2 * PI * radius (45) */
+    stroke-dashoffset: 0;
+    transition: stroke-dashoffset 0.5s linear;
+}
+
+.progress svg circle:last-child {
+    stroke: blue;
+}
+
+.progress p {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    margin: 0;
+    font-size: 14px;
+    color: #333;
+}
