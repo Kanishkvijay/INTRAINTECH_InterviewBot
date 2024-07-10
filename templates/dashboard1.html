@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>InterviewBot Dashboard</title>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='dash_style.css') }}">
+</head>
+
+<body>
+    <div class="sidebar">
+        <h1>InterviewBot</h1>
+        <a href="#">Dashboard</a>
+        <a href="#">Companies</a>
+        <a href="#">Skills</a>
+        <a href="#">Domains</a>
+        <a href="#">Reminders</a>
+        <a href="#">Setting</a>
+        <div class="premium">
+            <h2>Go Premium</h2>
+            <p>Explore realtime interviews with us</p>
+            <button>Get Access</button>
+        </div>
+    </div>
+    <div class="main-content">
+        <div class="header">
+            <h1>Hi User, See your Performance</h1>
+            <div class="search">
+                <input type="text" placeholder="Search">
+            </div>
+        </div>
+        <div class="premium-banner">
+            <h2>Go Premium</h2>
+            <p>Explore realtime interviews with us</p>
+            <button>Get Access</button>
+        </div>
+        <div class="dashboard">
+            <h1>Dashboard Analytics</h1>
+            <div class="cards">
+                <div class="card">
+                    <div class="details">
+                        <p>Total no of Questions</p>
+                        <h2 id="total-questions">{{ metrics.Total_no_of_Questions }}</h2>
+                    </div>
+                    <div class="progress">
+                        <svg>
+                            <circle cx="50" cy="50" r="40"></circle>
+                            <circle cx="50" cy="50" r="40" id="total-questions-circle"></circle>
+                        </svg>
+                        <p>{{ metrics.Total_no_of_Questions }}%</p>
+                    </div>
+                </div>
+                <div class="card">
+                    <div class="details">
+                        <p>Know your Conciseness</p>
+                        <h2 id="accuracy">{{ metrics.Conciseness }}</h2>
+                    </div>
+                    <div class="progress">
+                        <svg>
+                            <circle cx="50" cy="50" r="40"></circle>
+                            <circle cx="50" cy="50" r="40" id="accuracy-circle"></circle>
+                        </svg>
+                        <p>{{ metrics.Conciseness }}%</p>
+                    </div>
+                </div>
+                <div class="card">
+                    <div class="details">
+                        <p>Know Your Depth</p>
+                        <h2 id="depth">{{ metrics.Depth }}</h2>
+                    </div>
+                    <div class="progress">
+                        <svg>
+                            <circle cx="50" cy="50" r="40"></circle>
+                            <circle cx="50" cy="50" r="40" id="depth-circle"></circle>
+                        </svg>
+                        <p>{{metrics.Depth }}%</p>
+                    </div>
+                </div>
+                <div class="card">
+                    <div class="details">
+                        <p>Know Your Clarity</p>
+                        <h2 id="clarity">{{ metrics.Clarity }}</h2>
+                    </div>
+                    <div class="progress">
+                        <svg>
+                            <circle cx="50" cy="50" r="40"></circle>
+                            <circle cx="50" cy="50" r="40" id="clarity-circle"></circle>
+                        </svg>
+                        <p>{{ metrics.Clarity }}%</p>
+                    </div>
+                </div>
+                <div class="card">
+                    <div class="details">
+                        <p>Know Your Relevance</p>
+                        <h2 id="relevance">{{ metrics.Relevance }}</h2>
+                    </div>
+                    <div class="progress">
+                        <svg>
+                            <circle cx="50" cy="50" r="40"></circle>
+                            <circle cx="50" cy="50" r="40" id="relevance-circle"></circle>
+                        </svg>
+                        <p>{{ metrics.Relevance }}%</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="continue-reading">
+            <h2>Overview</h2>
+            <div class="view-all">
+                <!-- <img src="{{ url_for('static', filename='mean_scores_pie.png') }}" alt="View All Image" style="width: 60%; height: 400px; margin-top: 20px; border-radius: 10px;">
+                 <img src="{{ url_for('static', filename='mean_scores.png') }}" alt="View All Image" style="width: 60%; height: 400px; margin-top: 20px; border-radius: 10px;"> -->
+                <img src="{{ url_for('static', filename='overview_plot.png') }}" alt="image aayega nahi tata!">
+                <a href="#">View all</a>
+            </div>
+        </div>
+    </div>
+    <!-- <script src="script1.js"></script> -->
+</body>
+
+</html>
