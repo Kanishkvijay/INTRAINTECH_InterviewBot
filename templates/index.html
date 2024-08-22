@@ -1,0 +1,600 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>InTrain Tech</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Overall page styling */
+        body {
+            font-family: 'Roboto', sans-serif;
+            background-color: #fff;
+            color: #333;
+        }
+        /* Right-side content */
+        .main-content {
+            margin-left: 160px; /* Keep this for sidebar adjustment */
+            margin-top: 0px; /* Adjust this value based on your navbar's height */
+            width: calc(100% - 260px);
+            display: flex;
+            flex-direction: column;
+            position: relative;
+        }
+
+
+        /* Main flex layout */
+        .main-content-wrapper {
+            display: flex;
+            padding: 20px;
+            
+        }
+
+        /* Sidebar styling */
+        .sidebar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            background: radial-gradient(circle at 85.4% 50.8%, rgb(14, 72, 222) 0%, rgb(3, 22, 65) 74.2%);
+            color: #fff;
+            padding: 1.5rem;
+            border-radius: 0 20px 20px 0;
+            height: 100vh;
+            width: 240px;
+            box-sizing: border-box;
+        }
+
+        .sidebar li {
+            cursor: pointer;
+            padding: 1rem;
+            transition: background-color 0.3s;
+            display: flex;
+            align-items: center;
+        }
+
+        .sidebar li:hover {
+            background-color: white;
+            border-radius: 10px;
+            color:blue;
+        }
+
+        .sidebar li i {
+            margin-right: 0.5rem;
+        }
+
+        /* Right-side content */
+        .main-content {
+            margin-left: 260px; /* Adjust this value to ensure it's wide enough to clear the fixed sidebar */
+            width: calc(100% - 260px);
+            display: flex;
+            flex-direction: column;
+            
+        }
+
+        /* Content box styling */
+        .content-box {
+            animation: fadeIn 1s ease-in-out;
+            border-radius: 20px;
+            padding: 20px;
+            color: #333;
+            margin-bottom: 20px;
+            width: 100%;
+            box-sizing: border-box;
+        }
+
+        .content-box h3 {
+            color: #00447c;
+            margin-bottom: 1rem;
+        }
+
+        .content-box select {
+            background: #e6e6e6;
+            border: 1px solid #00447c;
+            padding: 8px;
+            border-radius: 5px;
+            width: 50%;
+            color: #333;
+            transition: border-color 0.3s;
+        }
+
+        .content-box select:focus {
+            border-color: #00447c;
+        }
+
+
+        /* Analytics section styling */
+
+        /* Footer styling */
+        footer {
+            color: #00447c;
+            text-align: center;
+            padding: 1rem;
+            bottom: 0;
+            width: 100%;
+        }
+
+        /* Header styling */
+        
+        /* Container for the selection boxes */
+        .selection-container {
+            display: flex;
+            justify-content: space-between;
+            gap: 20px;
+            width:100%;
+        }
+
+        /* Individual selection box styling */
+        .selection-box1 {
+            flex: 1;
+            background-image: url("data:image/jpeg;base64,..."); /* Background image data truncated */
+            border-radius: 20px;
+            padding: 20px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            border: solid 1px rgb(3, 22, 65);
+            background-size: cover;
+            width:150px;
+        }
+
+        .selection-box2 {
+            flex: 1;
+            border-radius: 20px;
+            padding: 20px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            border: solid 1px rgb(3, 22, 65);
+            background-image: url(""); /* Background image data truncated */
+        }
+
+        .selection-box3 {
+            flex: 1;
+            background-image: url("data:image/jpeg;base64,..."); /* Background image data truncated */
+            border-radius: 20px;
+            padding: 20px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            border: solid 1px rgb(3, 22, 65);
+            background-size: cover;
+        }
+        .logo {
+            display: flex; /* Use flexbox for alignment */
+            align-items: center; /* Center items vertically */
+        }
+
+        .logo-img {
+            width: 30px; /* Adjust size as needed */
+            height: 20px;
+            margin-right: 10px; /* Space between the logo and the title */
+        }
+        .scrolling-container {
+            display: flex;
+            overflow: hidden; /* Hide the overflow */
+            white-space: nowrap; /* Prevent line breaks */
+            width: 100vw;
+        }
+
+        .item {
+            display: inline-block;
+            min-width: 200px;
+            height: 150px;
+            margin-right: 5px;
+            text-align: center;
+            line-height: 150px;
+            font-size: 20px;
+            border-radius: 10px;
+            flex-shrink: 0; /* Prevent shrinking */
+        }
+
+        
+        
+        .main-heading{
+            font-size:40px;
+            margin-bottom: 1rem;
+            font-weight: 600;
+            color: 	#00008b;
+            text-align: center;
+        }
+
+        
+        @keyframes fadeLeft {
+            from {
+                opacity: 0;
+                transform: translateX(20px); /* Start 20px to the right */
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0); /* End at the original position */
+            }
+        }
+
+        /* Apply the animation to the desired element */
+        .main-heading{
+            animation: fadeLeft 1s ease-in-out;
+        }
+        .companies-head1{
+            color:white;
+            font-size:25px;
+            margin-bottom:15px;
+            text-align: center;
+        }
+
+        .companies-head2{
+            color: 	#00008b;
+            font-size:25px;
+            margin-bottom:15px;
+            text-align: left;
+        }
+        
+        .next-button{
+            background:  #e6e6e6;
+            color:  #00447c;
+            padding:5px;
+            margin-top:10px;
+            border-radius:10px;
+            width:80px;
+            height:35px
+        }
+       
+
+       
+        .container {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 15px;
+        }
+
+        .company-btn {
+            background-color: white; /* Ensure background color is white */
+            color: #00008B;
+            padding:  3px;
+            border: 1px solid #00008B;
+            border-radius: 25px;
+            cursor: pointer;
+            flex: 1;
+            margin: 0 5px;
+            text-align: center;
+            width:auto;
+        }
+
+        .company-btn:hover {
+            background: radial-gradient(circle at 85.4% 50.8%, rgb(14, 72, 222) 0%, rgb(3, 22, 65) 74.2%);
+            color: white;
+        }
+
+        .company-btn:active {
+            background-color: white;
+            color: #007BFF; /* Ensure the text color remains blue */
+        }
+        .companies-heading{
+            font-size:25px;
+            margin: 20px;
+            font-weight: 500;
+            color:	#00008B;
+            
+        }
+        .companies-para{
+            margin-bottom: 10px;
+        }
+        .interview-button{
+        align-items: center;
+        appearance: none;
+        background: radial-gradient(circle at 85.4% 50.8%, rgb(14, 72, 222) 0%, rgb(3, 22, 65) 74.2%);
+        border-radius:24px;
+        border-width: 0;
+        box-sizing: border-box;
+        color: #fff;
+        cursor: pointer;
+        display: inline-flex;
+        font-family: "JetBrains Mono",monospace;
+        height: 48px;
+        justify-content: center;
+        line-height: 1;
+        list-style: none;
+        overflow: hidden;
+        padding-left: 16px;
+        padding-right: 16px;
+        position: relative;
+        text-align: left;
+        text-decoration: none;
+        transition: box-shadow .15s,transform .15s;
+        user-select: none;
+        -webkit-user-select: none;
+        touch-action: manipulation;
+        white-space: nowrap;
+        will-change: box-shadow,transform;
+        font-size: 18px;
+        width:240px;
+        margin-top:20px
+        }
+
+        .interview-button:focus {
+        box-shadow: #D6D6E7 0 0 0 1.5px inset, rgba(45, 35, 66, 0.4) 0 2px 4px, rgba(45, 35, 66, 0.3) 0 7px 13px -3px, #D6D6E7 0 -3px 0 inset;
+        }
+
+        .interview-button:hover {
+        box-shadow: rgba(45, 35, 66, 0.4) 0 4px 8px, rgba(45, 35, 66, 0.3) 0 7px 13px -3px, #D6D6E7 0 -3px 0 inset;
+        transform: translateY(-2px);
+        }
+
+        .interview-button:active {
+        box-shadow: #D6D6E7 0 3px 7px inset;
+        transform: translateY(2px);
+        }
+        .interview-btn-container{
+            display: flex;
+            justify-content: center;
+
+        }
+        .premium-btn{
+            background:  radial-gradient(circle at 85.4% 50.8%, rgb(14, 72, 222) 0%, rgb(3, 22, 65) 74.2%);
+            color:white;
+            width:85px;
+            padding:10px;
+            border-radius : 14px;
+            margin-top: 10px;
+        }
+        /* Style the select element */
+select {
+    width: 100%;
+    background: #fff; /* Change this color to whatever you want */
+    padding: 8px;
+    border-radius: 5px;
+    color: #333;
+    transition: border-color 0.3s;
+    appearance: none; /* Remove default dropdown arrow in some browsers */
+    -webkit-appearance: none; /* Remove default dropdown arrow in Safari */
+}
+
+/* Style the dropdown options */
+select option {
+    background: #fff; /* Background color for dropdown options */
+    color: #333; /* Text color for dropdown options */
+}
+
+/* Change the dropdown background color on focus */
+select:focus {
+    border-color: #00447c;
+    background: #fff; /* Change background color when dropdown is active */
+}
+
+.interview-btn-container{
+            display: flex;
+            justify-content: center;
+
+        }
+        .select-wrapper {
+    position: relative;
+    display: inline-block;
+    width: 100%;
+}
+
+.select-wrapper select {
+    width: 100%;
+    padding: 10px;
+    padding-right: 30px; /* Space for the icon */
+    appearance: none;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    background: #fff url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="black" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-chevron-down"><polyline points="6 9 12 15 18 9"></polyline></svg>') no-repeat right 10px center;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+}
+
+.select-wrapper::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    right: 10px;
+    pointer-events: none;
+    transform: translateY(-50%);
+}
+
+
+
+        
+    </style>
+</head>
+
+<body class="font-sans">
+
+    <div class="main-content-wrapper">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <ul class="space-y-2">
+                <div class="logo flex items-center"> 
+                    <img src="/static/images/itt.jpg" alt="InTrain Tech Logo" class="logo-img">
+                    <span>InTrain Tech</span> 
+                </div>
+                <li class="p-2 flex items-center">
+                    <i class="fas fa-robot mr-2"></i> Interview Bot
+                </li>
+                <li class="p-2 cursor-pointer flex items-center">
+                    <a href="https://interview.intraintech.com/price/" class="flex items-center">
+                    <i class="fas fa-headset mr-2"></i> 24/7 AI Assistance
+                    </a>
+                </li>
+                <li class="p-2 cursor-pointer flex items-center">
+                    <a href="https://interview.intraintech.com/resume-builder/" class="flex items-center">
+                    <i class="fas fa-file-alt mr-2"></i> Resume Building
+                    </a>
+                </li>
+                <li class="p-2 cursor-pointer flex items-center">
+                    <a href="https://interview.intraintech.com/ebooks/" class="flex items-center">
+                    <i class="fas fa-book mr-2"></i> E-books
+                    </a>
+                </li>
+                <li class="p-2 cursor-pointer flex items-center">
+                    <a href="https://interview.intraintech.com/price/" class="flex items-center">
+                    <i class="fas fa-microphone-alt mr-2"></i> Vocal InterviewBot
+                    </a>
+                </li>
+                <li class="p-2 cursor-pointer flex items-center">
+                    <a href="https://interview.intraintech.com/skills-page/" class="flex items-center">
+                    <i class="fas fa-chalkboard-teacher mr-2"></i> Master Classes
+                    </a>
+                </li>
+                <li class="p-2 cursor-pointer flex items-center">
+                    <a href="https://interview.intraintech.com/" class="flex items-center">
+                    <i class="fas fa-trophy mr-2"></i> Success Story
+                    </a>
+                </li>
+            </ul>
+        </aside>
+
+        <!-- Main content -->
+        <main class="main-content">
+            <div class="content-box">
+                <h2 class= "main-heading">Master Your Interviews with AI-Driven Precision</h2>
+                <div>
+        <!-- Choose Your Company -->
+        <form id="selectionForm" action="/index6_c" method="post">
+            <div class="selection-container">
+                <div class="selection-box1">
+                    <h1 class="companies-head2">Choose your company</h1>
+                    <p class="companies-para">Pick the company you'd like to explore</p>
+                    <div class="select-wrapper">
+                        <select id="companySelect" name="company" required>
+                            <option value="">Company</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="selection-box2">
+                    <h1 class="companies-head2">Choose your skill</h1>
+                    <p class="companies-para">Pick the skill you want to focus on learning.</p>
+                    <div class="select-wrapper">
+                        <select id="positionSelect" name="domain" required>
+                            <option value="">Position</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="selection-box3">
+                    <h1 class="companies-head2">Choose your module</h1>
+                    <p class="companies-para">Choose a particular module that you want to prepare.</p>
+                    <div class="select-wrapper">
+                        <select id="moduleSelect" name="Module" required>
+                            <option value="">Module</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+            <div class="interview-btn-container">
+                <button type="submit" class="interview-button">Start your Interview</button>
+            </div>
+        </form>
+        
+
+        </div>
+    </div>
+        
+            <h1 class="companies-heading">Crack Top Companies With our InterviewBot!!!</h1>
+            <div class="logo-slider">
+                <div class="container">
+                    <div class="row">
+                        <button class="company-btn">Google</button>
+                        <button class="company-btn">Microsoft</button>
+                        <button class="company-btn">Apple</button>
+                        <button class="company-btn">Amazon</button>
+                        <button class="company-btn">Salesforce </button>
+                        <button class="company-btn">KPIT Tech </button>
+                    </div>
+                    <div class="row">
+                        <button class="company-btn">IBM</button>
+                        <button class="company-btn">Cognizant</button>
+                        <button class="company-btn">Wipro</button>
+                        <button class="company-btn">Infosys</button>
+                        <button class="company-btn">TCS</button>
+                        <button class="company-btn">Tech Mahendra</button>
+                        <button class="company-btn">HCL </button>
+                    </div>
+                </div>
+            </div>
+        </main>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+          fetch('/get_data')
+            .then(response => {
+              if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+
+              }
+              return response.json();
+            })
+            .then(data => {
+              if (!Array.isArray(data) || data.length === 0) {
+                console.warn('No data available');
+                return;
+              }
+    
+              const companySelect = document.getElementById('companySelect');
+              const positionSelect = document.getElementById('positionSelect');
+              const moduleSelect = document.getElementById('moduleSelect');
+    
+              const uniqueCompanies = [...new Set(data.map(item => item.company_name))];
+              uniqueCompanies.forEach(company => {
+                const option = document.createElement('option');
+                option.value = company;
+                option.textContent = company;
+                companySelect.appendChild(option);
+              });
+    
+              companySelect.addEventListener('change', function() {
+                const selectedCompany = this.value;
+    
+                positionSelect.innerHTML = '<option value="">Select a position</option>';
+                moduleSelect.innerHTML = '<option value="">Select a module</option>';
+    
+                const uniquePositions = [...new Set(data
+                  .filter(item => item.company_name === selectedCompany)
+                  .map(item => item.Job_Position))];
+    
+                uniquePositions.forEach(position => {
+                  const option = document.createElement('option');
+                  option.value = position;
+                  option.textContent = position;
+                  positionSelect.appendChild(option);
+                });
+              });
+    
+              positionSelect.addEventListener('change', function() {
+                const selectedPosition = this.value;
+    
+                moduleSelect.innerHTML = '<option value="">Select a module</option>';
+    
+                const uniqueModules = [...new Set(data
+                  .filter(item => item.Job_Position === selectedPosition)
+                  .map(item => item.Module))];
+    
+                uniqueModules.forEach(module => {
+                  const option = document.createElement('option');
+                  option.value = module;
+                  option.textContent = module;
+                  moduleSelect.appendChild(option);
+                });
+              });
+            })
+            .catch(error => {
+              console.error('Error fetching data:', error);
+              alert('Failed to load data. Check console for details.');
+            });
+        });
+      </script>
+</body>
+
+</html>
