@@ -1,40 +1,40 @@
-# //this is to make visulaisations appealing for the code of app1
-# //this is a really good stable version which we can scale
-from flask import Flask, request, jsonify, render_template
-import matplotlib
+from flask import Flask, request, jsonify, render_template, redirect, url_for, session
 import pandas as pd
-import plotly.express as px
-import plotly.graph_objects as go
-from langchain_huggingface import HuggingFaceEndpoint
 import matplotlib.pyplot as plt
-import pandas as pd
 import os
+import sqlite3
+from flask_session import Session
+import matplotlib
+import json
+import pickle
+from sklearn.feature_extraction.text import TfidfVectorizer
+from sklearn.metrics.pairwise import cosine_similarity
+import random
+
+
 matplotlib.use('Agg')
-metrics = {
-                "Accuracy": 0,
-                "Clarity": 0,
-                "Conciseness": 0,
-                "Depth": 0,
-                "Relevance": 0,
-                "Total_no_of_Questions":0
-            }
-# Initialize HuggingFaceEndpoint
-repo_id = "mistralai/Mistral-7B-Instruct-v0.3"
-sec_key = "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"  # Replace with your Hugging Face token
-llm = HuggingFaceEndpoint(repo_id=repo_id, max_lenlgth=128, temperature=1, token=sec_key)
+
+app = Flask(__name__)
+app.secret_key = ''  # Replace with your secret key
+
+# Configure session to use filesystem
+app.config['SESSION_TYPE'] = 'filesystem'
+Session(app)
 
 # Load dataset
 def load_dataset(filepath):
-    df = pd.read_csv(filepath)
+    df = pd.read_csv(filepath, encoding='ISO-8859-1')
     print("Dataset columns:", df.columns)  # Debugging output to check column names
     return df
 
-# Define conversation state
 class ConversationState:
     def __init__(self):
-        self.context = {}
+        self.context = {"is_job_position_verified": False}
         self.candidate_responses = []
         self.evaluation_metrics = []
+        self.scores = []  # Track scores for each response
+        self.correct_answers = 0  # Track the number of correct answers
+        self.incorrect_answers = 0  # Track the number of incorrect answers
 
     def update_context(self, key, value):
         self.context[key] = value
@@ -42,223 +42,334 @@ class ConversationState:
     def get_context(self, key):
         return self.context.get(key, None)
 
-    def add_candidate_response(self, question, response):
-        self.candidate_responses.append({'question': question, 'response': response})
-
-    def add_evaluation_metric(self, metric):
-        self.evaluation_metrics.append(metric)
+    def add_candidate_response(self, question, response, score):
+        self.candidate_responses.append({'question': question, 'response': response, 'score': score})
+        self.scores.append(score)  # Add the score to the scores list
+        if score >= 0.5:  # Define threshold for considering an answer as "correct"
+            self.correct_answers += 1
+        else:
+            self.incorrect_answers += 1
 
     def reset(self):
         self.context = {}
         self.candidate_responses = []
-        self.evaluation_metrics = []
+        self.scores = []
+        self.correct_answers = 0
+        self.incorrect_answers = 0
 
-# Define chatbot
+    def calculate_average_score(self):
+        if self.scores:
+            return sum(self.scores) / len(self.scores)
+        return 0
+    
+    def get_results(self):
+        return {"correct_answers": self.correct_answers, "incorrect_answers": self.incorrect_answers}
+
+
 class InterviewBot:
     def __init__(self, dataset):
-        self.state = ConversationState()
         self.dataset = dataset
-        self.is_job_position_verified = False
+        self.vectorizer = TfidfVectorizer()
 
-    def get_questions_for_position(self, company, job_position):
-        return self.dataset[(self.dataset['company_name'].str.lower() == company.lower()) & 
-                            (self.dataset['Job_Position'].str.lower() == job_position.lower())]['Questions'].tolist()
+    def get_questions_for_position_and_Module(self, company, job_position, Module):
+        # Adjust the query to include the Module
+        questions = self.dataset[
+            (self.dataset['company_name'].str.lower() == company.lower()) & 
+            (self.dataset['Job_Position'].str.lower() == job_position.lower()) &
+            (self.dataset['Module'].str.lower() == Module.lower())
+        ]['Questions'].tolist()
+        random.shuffle(questions)
+        return questions
 
     def get_answer_for_question(self, question):
         return self.dataset[self.dataset['Questions'] == question]['Answers'].values[0]
 
-    def start_interview(self, company, job_position):
-        self.state.update_context("company", company)
-        self.state.update_context("job_position", job_position)
-        self.state.update_context("questions", self.get_questions_for_position(company, job_position))
-        self.state.update_context("current_question_index", 0)
-        return self.get_next_question()
+    def start_interview(self, company, job_position, Module, state):
+        state.update_context("company", company)
+        state.update_context("job_position", job_position)
+        state.update_context("Module", Module)
+        state.update_context("questions", self.get_questions_for_position_and_Module(company, job_position, Module))
+        state.update_context("current_question_index", 0)
+        state.update_context("asked_questions", set())  # Track asked questions
+        return self.get_next_question(state)
 
-    def get_next_question(self):
-        questions = self.state.get_context("questions")
-        current_index = self.state.get_context("current_question_index")
+    def get_next_question(self, state):
+        questions = state.get_context("questions")
+        current_index = state.get_context("current_question_index")
+        asked_questions = state.get_context("asked_questions")
+
+        # Find the next question that hasn't been asked yet
+        while current_index < len(questions) and questions[current_index] in asked_questions:
+            current_index += 1
+
         if current_index < len(questions):
             question = questions[current_index]
-            self.state.update_context("current_question_index", current_index + 1)
+            state.update_context("current_question_index", current_index + 1)
+            asked_questions.add(question)
+            state.update_context("asked_questions", asked_questions)
             return question
         else:
             return None
 
-    def verify_job_position(self, company, job_position):
-        self.dataset[['company_name', 'Job_Position']] = self.dataset[['company_name', 'Job_Position']].fillna('')
-        available_positions = self.dataset[['company_name', 'Job_Position']].apply(
+    def verify_job_position(self, company, job_position, Module, state):
+        self.dataset[['company_name', 'Job_Position', 'Module']] = self.dataset[['company_name', 'Job_Position', 'Module']].fillna('')
+        available_positions = self.dataset[['company_name', 'Job_Position', 'Module']].apply(
             lambda x: (
                 x['company_name'].lower(),
-                x['Job_Position'].lower()
+                x['Job_Position'].lower(),
+                x['Module'].lower()
             ),
             axis=1
         ).tolist()
-        if (company.lower(), job_position.lower()) in available_positions:
-            first_question = self.start_interview(company, job_position)
+        if (company.lower(), job_position.lower(), Module.lower()) in available_positions:
+            first_question = self.start_interview(company, job_position, Module, state)
             return True, first_question
         else:
             return False, None
+        
+    def compute_similarity(self, user_response, correct_answer):
+        responses = [user_response, correct_answer]
+        tfidf_matrix = self.vectorizer.fit_transform(responses)
+        cosine_sim = cosine_similarity(tfidf_matrix[0:1], tfidf_matrix[1:2])
+        return cosine_sim[0][0]  # Return the similarity score
 
-    def evaluate_answer(self, user_input, question):
-        original_answer = self.get_answer_for_question(question)
-        prompt = f"""
-You are an AI model tasked with evaluating the quality of answers based on several key metrics. These metrics are used to determine the effectiveness and clarity of the responses. You will be given two inputs: the original answer and the user's answer. Your task is to compare the user's answer with the original answer and generate an array of metrics for grading the user's answer.
-
-The metrics are as follows:
-
-Accuracy (0-10): How accurately the user's answer reflects the definition and differences between parametric and non-parametric models.
-Clarity (0-10): How clear and understandable the user's answer is for someone who may not be familiar with the topic.
-Conciseness (0-10): How concise and to the point the user's answer is without unnecessary information.
-Depth (0-10): How well the user's answer explains the concepts, including any relevant details.
-Relevance (0-10): How relevant the user's answer is to the question asked.
-generate a one line response of the metric values as a python dictionary data structure:
-original answer: {original_answer}
-user answer: {user_input}
-"""
-        print((llm.invoke(prompt)))
-        response = llm.invoke(prompt)
-        try:
-            metrics = eval(response)
-            if not isinstance(metrics, dict):
-                raise ValueError("Response is not a valid dictionary")
-        except Exception as e:
-            print(f"Error evaluating response: {e}")
-            metrics = {
-                "Accuracy": 0,
-                "Clarity": 0,
-                "Conciseness": 0,
-                "Depth": 0,
-                "Relevance": 0
-            }
-        self.state.add_evaluation_metric(metrics)
-        return metrics
-
-    def respond(self, user_input, company=None, domain=None):
-        if company and domain and not self.is_job_position_verified:
-            is_verified, first_question = self.verify_job_position(company, domain)
+    def respond(self, user_input, state, company=None, domain=None, Module=None):
+        if state.get_context("is_job_position_verified") is None:
+            state.update_context("is_job_position_verified", False)
+        if company and domain and Module and not state.get_context("is_job_position_verified"):
+            is_verified, first_question = self.verify_job_position(company, domain, Module, state)
             if is_verified:
-                self.is_job_position_verified = True
-                return f"Got it. Starting interview for {self.state.get_context('job_position')} at {self.state.get_context('company')}. Here is your first question: {first_question}"
+                state.update_context("is_job_position_verified", True)
+                return f"Let's get started with your interview for the {state.get_context('job_position')} role at {state.get_context('company')} focusing on {state.get_context('Module')}. Ready? Here’s your first question: {first_question}. Good luck!"
             else:
-                return "Please provide a valid company name and job position in the format 'Company, Job Position'."
+                return "Your self-introduction doesn’t seem to be valid. It’s important to share a clear and relevant introduction to make the best use of the AI assistant. Kindly log out and revisit the page when you’re ready to try again. We’re here to support you every step of the way!"
 
         if user_input.lower() == "quit":
-            self.complete_interview()
-            self.is_job_position_verified = False
-            self.state.reset()
-            return "Interview terminated. Thank you for using the Interview Prep Chatbot."
+            state.reset()
+            return "Interview session ended. Thank you for choosing the Interview Prep Chatbot! Your preparation doesn’t have to stop here—consider upgrading to unlock more questions, advanced features, and take your readiness to the next level."
 
-        current_index = self.state.get_context("current_question_index") - 1
-        questions = self.state.get_context("questions")
-        if current_index < 6:
+        current_index = state.get_context("current_question_index") - 1
+        questions = state.get_context("questions")
+        if current_index < len(questions):
             current_question = questions[current_index]
-            self.state.add_candidate_response(current_question, user_input)
+            correct_answer = self.get_answer_for_question(current_question)
+            similarity_score = self.compute_similarity(user_input, correct_answer)
+            state.add_candidate_response(current_question, user_input, similarity_score)
 
-            # Evaluate the answer
-            metrics = self.evaluate_answer(user_input, current_question)
-            print(f"Evaluation metrics: {metrics}")
-
-            next_question = self.get_next_question()
+            next_question = self.get_next_question(state)
             if next_question:
-                return f"Next question: {next_question}"
+                if similarity_score < 0.2:
+                    return f"Your score is {similarity_score * 100:.2f}%. Don't worry, every response is a step forward! Let's keep going and see what comes next: {next_question}"
+                elif similarity_score < 0.4:
+                    return f"You're getting there! Your response shows potential with {similarity_score * 100:.2f}%. Ready for the next challenge? Here it is: {next_question}"
+                elif similarity_score < 0.6:
+                    return f"Nice work! You're on the right track with {similarity_score * 100:.2f}%. Let's continue with the next question: {next_question}"
+                elif similarity_score < 0.8:
+                    return f"Great job! Your response is quite strong at {similarity_score * 100:.2f}%. Let's keep the momentum going: {next_question}"
+                else:
+                    return f"Fantastic! You nailed it, Your response is {similarity_score * 100:.2f}% aligned with what we're looking for. Let's move on to the next question: {next_question}"
             else:
-                return self.complete_interview()
+                average_score = state.calculate_average_score()
+                results = state.get_results()
+                if average_score < 0.5:
+                    return (
+                        "Interview completed.\n"
+                        f"Your final score is {average_score * 100:.2f}% with {results['correct_answers']} correct and {results['incorrect_answers']} incorrect answers.\n"
+                        "It seems there’s still some room for growth, but remember every mistake is a step toward improvement! "
+                        "Keep practicing, and you’ll be amazed at how much progress you can make. "
+                        "Don't forget, learning is a journey.\n"
+                        "Type 'quit' to end the conversation or Upgrade the plan for more questions and features to help you sharpen your skills."
+                    )
+                else:
+                    return (
+                        "Interview completed. Well done!\n"
+                        f"Interview completed. Congratulations! Your final score is {average_score * 100:.2f}% with {results['correct_answers']} correct and {results['incorrect_answers']} incorrect answers."
+                        "Great job! You’re on the right track and demonstrating strong potential. "
+                        "Keep refining your skills and aiming for perfection. Remember, consistent practice will only push you further ahead!\n"
+                        "Type 'quit' to end the conversation or Upgrade the plan for more questions and advanced insights to take your preparation to the next level."
+                    )
         else:
-             print("No more questions.")
-             return self.complete_interview()
+            return "Congratulations on completing the interview! We appreciate your effort and responses. To continue advancing your skills and gain access to a wider range of questions and premium features, consider upgrading your plan. Elevate your preparation and achieve your career goals with our enhanced resources and support!"
 
-    def complete_interview(self):
-        df = pd.DataFrame(self.state.evaluation_metrics)
-        print("Interview completed. Evaluation DataFrame:")
-        print(df)
-        self.state.reset()
-        self.create_visualizations(df)
-        total = len(df)
-        metrics['Accuracy'] = round((df['Accuracy'].sum()/total)*10,2)
-        metrics['Clarity'] = round((df['Clarity'].sum()/total)*10,2)
-        metrics['Conciseness'] = round((df['Conciseness'].sum()/total)*10,2)
-        metrics['Depth'] = round((df['Depth'].sum()/total)*10,2)
-        metrics['Relevance'] = round((df['Relevance'].sum()/total)*10,2)
-        metrics['Total_no_of_Questions'] = len(df)
-
-    def create_visualizations(self, df):
-        # Set up the figure with two subplots
-        fig, (ax1, ax2) = plt.subplots(nrows=1, ncols=2, figsize=(16, 6))
-        # Example: Create visualizations
-        columns = df.columns
-        # Using shades of blue for the bar chart
-        bar_colors = ['#1f77b4', '#aec7e8', '#6baed6', '#3182bd', '#08519c']
-        # Example: Plotting mean scores
-        mean_scores = df.mean()
-        # ax1.figure(figsize=(8, 6))
-        ax1.bar(columns, mean_scores, color=bar_colors)
-        ax1.set_xlabel('Evaluation Criteria')
-        ax1.set_ylabel('Mean Score')
-        ax1.set_title('Mean Evaluation Scores')
-        ax1.grid(axis='y', linestyle='--', alpha=0.6)
-        ax1.legend()
-        # ax1.tight_layout()
-        
-        # Save the plot as an image in a static directory
-        # if not os.path.exists('static'):
-        #     os.makedirs('static')
-        # plt.savefig('static/mean_scores.png')  # Adjust path as per your project structure
-        # plt.close()
-
-        # Example: Plotting pie chart
-        # plt.figure(figsize=(8, 6))
-        pie_colors = ['#1f77b4', '#aec7e8', '#6baed6', '#3182bd', '#08519c']
-        explode = (0.1, 0, 0, 0, 0)
-        ax2.pie(mean_scores, labels=mean_scores.index, autopct='%1.1f%%', startangle=140, colors=pie_colors, explode=explode)
-        ax2.axis('equal')
-        ax2.set_title('Mean Evaluation Scores Distribution')
-        
-        # Save the  image
-        plt.savefig('static/overview_plot.png')  # Adjust path as per your project structure
-        plt.close()
-
-app = Flask(__name__)
-dataset = load_dataset('all_companies2.csv')
-bot = InterviewBot(dataset)
+# SQLite database setup
+def get_db_connection():
+    conn = sqlite3.connect('user_data.db')
+    conn.row_factory = sqlite3.Row
+    return conn
 
 @app.route('/')
 def index():
-    return render_template('pageA.html')
+    if 'user_id' not in session:
+        print("User is not logged in. Redirecting to login page.")
+        return redirect(url_for('login'))
+    print(f"User {session.get('email')} is logged in. Displaying interview bot page.")
+    return render_template('index.html', email=session.get('email'))
 
-@app.route('/index6_b', methods=['POST'])
-def pageB():
-    company = request.form.get('company')
-    return render_template('index6_b.html', company=company)
+@app.route('/signup', methods=['GET', 'POST'])
+def signup():
+    if request.method == 'POST':
+        name = request.form['name']
+        email = request.form['email']
+        phone = request.form['phone']
+        password = request.form['password']
+        confirm_password = request.form['confirm-password']
 
-@app.route('/index6_c', methods=['POST'])
+        if password != confirm_password:
+            return 'Passwords do not match!'
+
+        conn = get_db_connection()
+        conn.execute('INSERT INTO users (name, email, phone, password) VALUES (?, ?, ?, ?)',
+                     (name, email,phone, password))
+        conn.commit()
+        conn.close()
+
+        return redirect(url_for('login'))
+
+    return render_template('signup.html')
+
+@app.route('/login', methods=['GET', 'POST'])
+def login():
+    if request.method == 'POST':
+        email = request.form['email']
+        password = request.form['password']
+
+        conn = get_db_connection()
+        user = conn.execute('SELECT * FROM users WHERE email = ? AND password = ?',
+                            (email, password)).fetchone()
+        conn.close()
+
+        if user:
+            session['user_id'] = user['id']
+            session['email'] = user['email']
+            session['state'] = pickle.dumps(ConversationState()).hex()  # Initialize session state
+            return redirect(url_for('index'))
+        else:
+            return 'Invalid credentials!'
+
+    return render_template('login.html')
+
+@app.route('/logout', methods=['POST'])
+def logout():
+    session.pop('user_id', None)
+    session.pop('state', None)
+    return redirect(url_for('login'))
+
+@app.route('/index6_c', methods=['GET','POST'])
 def pageC():
-    company = request.form.get('company')
-    domain = request.form.get('domain')
-    print(company)
-    print(domain)
-    return render_template('index6_c.html', company=company, domain=domain)
+    if 'user_id' not in session:
+        return redirect(url_for('login'))
+    # Handle POST request parameters
+    if request.method == 'POST':
+        company = request.form.get('company')
+        domain = request.form.get('domain')
+        Module = request.form.get('Module')
+    else:
+        # Handle GET request parameters
+        company = request.args.get('company')
+        domain = request.args.get('domain')
+        Module=request.args.get('Module')
+
+    # Load the state from the session
+    state = pickle.loads(bytes.fromhex(session['state']))
+
+    # Get the results
+    results = state.get_results()
+    correct_answers = results['correct_answers']
+    incorrect_answers = results['incorrect_answers']
+
+    # Render the page with the results
+    return render_template('index6_c.html', 
+                           company=company, 
+                           domain=domain,
+                           Module=Module,
+                           correct_answers=correct_answers,
+                           incorrect_answers=incorrect_answers)
 
 @app.route('/chat', methods=['POST'])
 def chat():
+    if 'user_id' not in session:
+        return redirect(url_for('login'))
+
+    # Ensure state is in session
+    if 'state' not in session:
+        session['state'] = pickle.dumps(ConversationState()).hex()
+
     user_input = request.json.get('message')
     company = request.json.get('company')
     domain = request.json.get('domain')
-    response = bot.respond(user_input, company=company, domain=domain)
+    Module = request.json.get('Module')
+
+    # Load the state from the session
+    state = pickle.loads(bytes.fromhex(session['state']))
+    if user_input.lower() == "quit":
+        # Reset state if needed
+        # state.reset()
+        # Save the updated state back to the session
+        session['state'] = pickle.dumps(state).hex()
+        # Redirect to /index6_c with company and domain parameters
+        return redirect(url_for('pageC', company=company, domain=domain, Module=Module))
+    
+    response = bot.respond(user_input, state, company=company, domain=domain, Module=Module)
+
+    # Save the updated state back to the session
+    session['state'] = pickle.dumps(state).hex()
     return jsonify({'response': response})
 
-@app.route('/get_df',methods=['GET'])
-def get_df():
+@app.route('/get_data', methods=['GET'])
+def get_data():
+    if 'user_id' not in session:
+        return redirect(url_for('login'))
+    
+    file_path = os.path.join(os.path.dirname(__file__), 'interview.csv')
+    try:
+        # Read the CSV file with ISO-8859-1 encoding
+        data = pd.read_csv(file_path, encoding='ISO-8859-1')
+        
+        # Replace NaN values with an empty string or any other placeholder
+        data = data.fillna('')
 
-    df = bot.complete_interview()
-    return df
+        # Convert the DataFrame to a list of dictionaries and return as JSON
+        return jsonify(data.to_dict(orient='records'))
+    except Exception as e:
+        print(f"Error reading CSV file: {e}")  # Log error to console
+        return jsonify({"error": str(e)}), 500
+
+
+@app.route('/get_df', methods=['GET'])
+def get_df():
+    if 'user_id' not in session:
+        return redirect(url_for('login'))
+    state = pickle.loads(bytes.fromhex(session['state']))
+    metrics = bot.complete_interview(state)
+    return jsonify(metrics)
+
 @app.route('/dashboard')
 def dashboard():
-    return render_template('dashboard1.html')
+    if 'user_id' not in session:
+        return redirect(url_for('login'))
+
+    # Load the state from the session
+    state = pickle.loads(bytes.fromhex(session['state']))
+    
+    # Get the results
+    results = state.get_results()
+    correct_answers = results['correct_answers']
+    incorrect_answers = results['incorrect_answers']
+
+    # Render the dashboard page with the results
+    return render_template('dashboard1.html', 
+                           correct_answers=correct_answers, 
+                           incorrect_answers=incorrect_answers)
 
 @app.route('/get_metrics', methods=['GET'])
 def get_metrics():
-    # output = bot.complete_interview()
-    return render_template('dashboard1.html',metrics = metrics)
+    if 'user_id' not in session:
+        return redirect(url_for('login'))
+    state = pickle.loads(bytes.fromhex(session['state']))
+    metrics = bot.complete_interview(state)
+    return render_template('dashboard1.html', metrics=metrics)
 
 if __name__ == "__main__":
+    dataset = load_dataset('interview.csv')
+    bot = InterviewBot(dataset)
     app.run(host='0.0.0.0', port=5001)
