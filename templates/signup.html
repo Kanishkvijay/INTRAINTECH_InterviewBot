@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sign Up - InTrain Tech</title>
+    <link rel="stylesheet" href="static/login.css">
+</head>
+<body>
+    <div class="container">
+        <div class="form-container">
+            <h1>Create Account</h1>
+            <p>Please fill in the details to create an account</p>
+            <form action="/signup" method="POST">
+                <div class="input-group">
+                    <label for="name">Name</label>
+                    <input type="text" id="name" name="name" required>
+                </div>
+                <div class="input-group">
+                    <label for="email">Email</label>
+                    <input type="email" id="email" name="email" required>
+                </div>
+                <div class="input-group">
+                    <label for="phone">Phone Number</label>
+                    <div style="display: flex;">
+                        <select id="country-code" name="country-code" required>
+                            <option value="+91">+91 (India)</option>
+                            <option value="+1">+1 (US)</option>
+                            <option value="+44">+44 (UK)</option>
+                            <option value="+61">+61 (Australia)</option>
+                            <option value="+81">+81 (Japan)</option>
+                            <option value="+49">+49 (Germany)</option>
+                            <option value="+33">+33 (France)</option>
+                            <option value="+86">+86 (China)</option>
+                            <option value="+7">+7 (Russia)</option>
+                            <option value="+82">+82 (South Korea)</option>
+                            <option value="+39">+39 (Italy)</option>
+                            <option value="+34">+34 (Spain)</option>
+                            <option value="+55">+55 (Brazil)</option>
+                            <option value="+27">+27 (South Africa)</option>
+                            <!-- Add more country codes as needed -->
+                        </select>
+                        <input type="tel" id="phone" name="phone" required placeholder="Phone number">
+                    </div>
+                </div>
+                <div class="input-group">
+                    <label for="password">Password</label>
+                    <input type="password" id="password" name="password" required>
+                </div>
+                <div class="input-group">
+                    <label for="confirm-password">Confirm Password</label>
+                    <input type="password" id="confirm-password" name="confirm-password" required>
+                </div>
+                <button type="submit">Sign Up</button>
+            </form>
+            <p class="login-link">Already have an account? <a href="login.html">Login here</a></p>
+        </div>
+    </div>
+    <script>
+        const countryCodeSelect = document.getElementById('country-code');
+        const phoneInput = document.getElementById('phone');
+    
+        countryCodeSelect.addEventListener('change', function() {
+            phoneInput.value = this.value;
+        });
+    
+        phoneInput.addEventListener('focus', function() {
+            if (!phoneInput.value.startsWith(countryCodeSelect.value)) {
+                phoneInput.value = countryCodeSelect.value;
+            }
+        });
+    </script>
+</body>
+</html>
